@@ -65,6 +65,15 @@ DOWNLOAD_IMAGES=true
 
 # Optional: Use existing browser session (default: true)
 USE_BROWSER_SESSION=true
+
+# Optional: How long to wait (in seconds) for manual login when using a
+# browser session (default: 120, minimum: 30)
+MANUAL_LOGIN_WAIT=120
+
+# Optional: Point to a copied/unlocked Chrome user data directory if you want
+# to reuse an existing profile. Leave blank to use a fresh temporary profile.
+CHROME_USER_DATA_DIR=/path/to/copied/chrome/profile
+CHROME_PROFILE=Default
 ```
 
 ## Usage

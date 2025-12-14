@@ -52,6 +52,7 @@ class Config:
     email: Optional[str] = field(default_factory=lambda: os.getenv('SUBSTACK_EMAIL'))
     password: Optional[str] = field(default_factory=lambda: os.getenv('SUBSTACK_PASSWORD'))
     use_browser_session: bool = field(default_factory=lambda: get_bool('USE_BROWSER_SESSION', True))
+    manual_login_wait: int = field(default_factory=lambda: get_int('MANUAL_LOGIN_WAIT', 120))
     
     # Output
     output_dir: Path = field(default_factory=lambda: Path(os.getenv('OUTPUT_DIR', './output')))
@@ -93,6 +94,11 @@ class Config:
         if self.image_format.lower() not in valid_formats:
             print(f"Warning: Invalid image format '{self.image_format}'. Using 'original'.")
             self.image_format = 'original'
+
+        # Ensure manual login wait is reasonable
+        if self.manual_login_wait < 30:
+            print("Warning: MANUAL_LOGIN_WAIT too low; setting to minimum of 30 seconds.")
+            self.manual_login_wait = 30
     
     def validate(self) -> bool:
         """Validate that required configuration is present."""
