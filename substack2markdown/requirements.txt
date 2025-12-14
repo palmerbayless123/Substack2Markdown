@@ -1,0 +1,29 @@
+# Web scraping and automation
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# HTTP requests and utilities
+requests>=2.31.0
+urllib3>=2.0.0
+
+# HTML to Markdown conversion
+markdownify>=0.11.0
+html2text>=2020.1.16
+
+# Configuration and environment
+python-dotenv>=1.0.0
+
+# Progress display
+tqdm>=4.66.0
+rich>=13.0.0
+
+# Date handling
+python-dateutil>=2.8.0
+
+# Image processing (optional, for image optimization)
+Pillow>=10.0.0
+
+# JSON handling (built-in, but useful for type hints)
+typing-extensions>=4.8.0
