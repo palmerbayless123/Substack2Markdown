@@ -128,7 +128,7 @@ class SubstackScraper:
             try:
                 # Extract JSON from page (might be wrapped in HTML)
                 soup = BeautifulSoup(page_source, 'lxml')
-                
+
                 # Check if it's raw JSON or wrapped
                 try:
                     data = json.loads(page_source)
@@ -139,21 +139,30 @@ class SubstackScraper:
                         data = json.loads(pre_tag.get_text())
                     else:
                         break
-                
+
                 if not data:
                     break
-                
-                for item in data:
+
+                # Normalize response structure (dict or list)
+                if isinstance(data, dict):
+                    items = data.get('items') or data.get('posts')
+                    if not isinstance(items, list):
+                        print(f"API parsing warning: unexpected response format at offset {offset}")
+                        break
+                else:
+                    items = data
+
+                for item in items:
                     post = self._parse_api_post(item)
                     if post:
                         posts.append(post)
-                
-                if len(data) < limit:
+
+                if len(items) < limit:
                     break
-                
+
                 offset += limit
                 time.sleep(1)  # Small delay between API calls
-                
+
             except (json.JSONDecodeError, KeyError, TypeError) as e:
                 print(f"API parsing error: {e}")
                 break
