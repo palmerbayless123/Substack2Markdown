@@ -56,6 +56,12 @@ class SubstackBrowser:
                 'Chrome/120.0.0.0 Safari/537.36'
             )
 
+            # Optional: reuse a Chrome profile (copied/unlocked directory)
+            if self.config.chrome_user_data_dir:
+                options.add_argument(f"--user-data-dir={self.config.chrome_user_data_dir}")
+            if self.config.chrome_profile:
+                options.add_argument(f"--profile-directory={self.config.chrome_profile}")
+
             # Initialize driver with webdriver-manager
             service = Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=service, options=options)
@@ -94,21 +100,7 @@ class SubstackBrowser:
             
             # Wait for manual login
             if self.config.use_browser_session:
-                print("\n" + "="*60)
-                print("MANUAL LOGIN REQUIRED")
-                print("="*60)
-                print("Please log in to Substack in the browser window.")
-                print("The script will wait 60 seconds for you to complete login.")
-                print("="*60 + "\n")
-
-                # Wait 60 seconds for user to login
-                for i in range(60, 0, -10):
-                    print(f"  Waiting {i} seconds...")
-                    time.sleep(10)
-
-                print("  Proceeding with scraping...")
-                self._is_logged_in = True
-                return True
+                return self._wait_for_manual_login()
             
             # Automated login with email/password
             if self.config.email and self.config.password:
@@ -178,6 +170,35 @@ class SubstackBrowser:
         except Exception as e:
             print(f"[FAIL] Automated login error: {e}")
             return False
+
+    def _wait_for_manual_login(self) -> bool:
+        """Provide a stable window for manual login without extra navigation."""
+        wait_seconds = max(self.config.manual_login_wait, 30)
+
+        print("\n" + "=" * 60)
+        print("MANUAL LOGIN REQUIRED")
+        print("=" * 60)
+        print("Please log in to Substack in the browser window.")
+        print(f"The script will wait {wait_seconds} seconds before continuing.")
+        print("Do not close the browser tab; the script will continue automatically.")
+        print("=" * 60 + "\n")
+
+        remaining = wait_seconds
+        step = 15
+
+        while remaining > 0:
+            print(f"  Waiting {remaining} seconds...")
+            sleep_time = min(step, remaining)
+            time.sleep(sleep_time)
+            remaining -= sleep_time
+
+            if not self._driver_alive():
+                print("[FAIL] Browser session closed during login wait")
+                return False
+
+        print("  Proceeding with scraping...")
+        self._is_logged_in = True
+        return True
     
     def _check_logged_in(self) -> bool:
         """Check if currently logged into Substack."""
@@ -253,6 +274,18 @@ class SubstackBrowser:
         except Exception as e:
             print(f"Error loading page: {e}")
             return None
+
+    def _driver_alive(self) -> bool:
+        """Best-effort check that the browser session is still active."""
+        if not self.driver:
+            return False
+
+        try:
+            # A no-op script still fails quickly if the session died
+            self.driver.execute_script("return 1")
+            return True
+        except Exception:
+            return False
     
     def scroll_to_bottom(self):
         """Scroll to the bottom of the page to load lazy content."""
