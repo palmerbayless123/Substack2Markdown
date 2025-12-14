@@ -33,33 +33,29 @@ class SubstackBrowser:
         """Initialize the Chrome browser with appropriate options."""
         try:
             options = Options()
-            
+
             # Basic options
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--disable-gpu')
             options.add_argument('--window-size=1920,1080')
-            
+
             # Headless mode
             if self.config.headless:
                 options.add_argument('--headless=new')
-            
-            # Use existing Chrome profile for logged-in session
-            if self.config.use_browser_session and self.config.chrome_user_data_dir:
-                options.add_argument(f'--user-data-dir={self.config.chrome_user_data_dir}')
-            
+
             # Avoid detection
             options.add_argument('--disable-blink-features=AutomationControlled')
             options.add_experimental_option('excludeSwitches', ['enable-automation'])
             options.add_experimental_option('useAutomationExtension', False)
-            
+
             # Set user agent
             options.add_argument(
                 'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                 'AppleWebKit/537.36 (KHTML, like Gecko) '
                 'Chrome/120.0.0.0 Safari/537.36'
             )
-            
+
             # Initialize driver with webdriver-manager
             service = Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=service, options=options)
@@ -76,17 +72,17 @@ class SubstackBrowser:
                 '''
             })
             
-            print("✓ Browser initialized successfully")
+            print("[OK] Browser initialized successfully")
             return True
             
         except WebDriverException as e:
-            print(f"✗ Failed to initialize browser: {e}")
+            print(f"[FAIL] Failed to initialize browser: {e}")
             return False
     
     def login(self) -> bool:
         """Log into Substack using provided credentials or existing session."""
         if not self.driver:
-            print("✗ Browser not initialized")
+            print("[FAIL] Browser not initialized")
             return False
         
         try:
@@ -96,40 +92,33 @@ class SubstackBrowser:
             self.driver.get(login_url)
             time.sleep(3)
             
-            # Check if already logged in
-            if self._check_logged_in():
-                print("✓ Already logged in via browser session")
-                self._is_logged_in = True
-                return True
-            
-            # If using browser session but not logged in, prompt user
+            # Wait for manual login
             if self.config.use_browser_session:
                 print("\n" + "="*60)
                 print("MANUAL LOGIN REQUIRED")
                 print("="*60)
                 print("Please log in to Substack in the browser window.")
-                print("The script will continue once you're logged in.")
-                print("Press Enter in this terminal when done...")
+                print("The script will wait 60 seconds for you to complete login.")
                 print("="*60 + "\n")
-                input()
-                
-                if self._check_logged_in():
-                    print("✓ Login successful")
-                    self._is_logged_in = True
-                    return True
-                else:
-                    print("✗ Login verification failed")
-                    return False
+
+                # Wait 60 seconds for user to login
+                for i in range(60, 0, -10):
+                    print(f"  Waiting {i} seconds...")
+                    time.sleep(10)
+
+                print("  Proceeding with scraping...")
+                self._is_logged_in = True
+                return True
             
             # Automated login with email/password
             if self.config.email and self.config.password:
                 return self._automated_login()
             
-            print("✗ No login method available")
+            print("[FAIL] No login method available")
             return False
             
         except Exception as e:
-            print(f"✗ Login error: {e}")
+            print(f"[FAIL] Login error: {e}")
             return False
     
     def _automated_login(self) -> bool:
@@ -176,18 +165,18 @@ class SubstackBrowser:
                 input()
             
             if self._check_logged_in():
-                print("✓ Automated login successful")
+                print("[OK] Automated login successful")
                 self._is_logged_in = True
                 return True
             else:
-                print("✗ Automated login failed")
+                print("[FAIL] Automated login failed")
                 return False
                 
         except TimeoutException:
-            print("✗ Login form not found or timed out")
+            print("[FAIL] Login form not found or timed out")
             return False
         except Exception as e:
-            print(f"✗ Automated login error: {e}")
+            print(f"[FAIL] Automated login error: {e}")
             return False
     
     def _check_logged_in(self) -> bool:
@@ -251,7 +240,7 @@ class SubstackBrowser:
                     time.sleep(wait_time)
                     return self.get_page(url, retry + 1)
                 else:
-                    print("✗ Rate limit exceeded maximum retries")
+                    print("[FAIL] Rate limit exceeded maximum retries")
                     return None
             
             return self.driver.page_source
@@ -289,7 +278,7 @@ class SubstackBrowser:
         if self.driver:
             try:
                 self.driver.quit()
-                print("✓ Browser closed")
+                print("[OK] Browser closed")
             except Exception:
                 pass
             self.driver = None

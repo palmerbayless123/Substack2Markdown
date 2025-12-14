@@ -265,7 +265,7 @@ class MarkdownConverter:
             return filename
             
         except Exception as e:
-            print(f"    ✗ Failed to download image: {url[:50]}... ({e})")
+            print(f"    [FAIL] Failed to download image: {url[:50]}... ({e})")
             return None
     
     def _get_extension(self, url: str, content_type: str) -> str:

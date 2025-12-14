@@ -78,21 +78,21 @@ class SubstackScraper:
         api_posts = self._get_posts_from_api()
         if api_posts:
             posts.extend(api_posts)
-            print(f"✓ Found {len(api_posts)} posts via API")
+            print(f"[OK] Found {len(api_posts)} posts via API")
         
         # Method 2: Archive page scraping (fallback)
         if not posts:
             archive_posts = self._get_posts_from_archive()
             if archive_posts:
                 posts.extend(archive_posts)
-                print(f"✓ Found {len(archive_posts)} posts from archive")
+                print(f"[OK] Found {len(archive_posts)} posts from archive")
         
         # Method 3: Sitemap (another fallback)
         if not posts:
             sitemap_posts = self._get_posts_from_sitemap()
             if sitemap_posts:
                 posts.extend(sitemap_posts)
-                print(f"✓ Found {len(sitemap_posts)} posts from sitemap")
+                print(f"[OK] Found {len(sitemap_posts)} posts from sitemap")
         
         # Deduplicate by URL
         seen_urls = set()
@@ -108,7 +108,7 @@ class SubstackScraper:
         # Apply filters
         filtered_posts = self._apply_filters(unique_posts)
         
-        print(f"✓ Total unique posts after filtering: {len(filtered_posts)}")
+        print(f"[OK] Total unique posts after filtering: {len(filtered_posts)}")
         self._posts_cache = filtered_posts
         return filtered_posts
     
@@ -337,7 +337,7 @@ class SubstackScraper:
         
         page_source = self.browser.get_page(post.url)
         if not page_source:
-            print(f"  ✗ Failed to load: {post.url}")
+            print(f"  [FAIL] Failed to load: {post.url}")
             return None
         
         soup = BeautifulSoup(page_source, 'lxml')
@@ -359,7 +359,7 @@ class SubstackScraper:
                 break
         
         if not content_elem:
-            print(f"  ✗ Could not find content for: {post.url}")
+            print(f"  [FAIL] Could not find content for: {post.url}")
             return None
         
         # Update post metadata from page

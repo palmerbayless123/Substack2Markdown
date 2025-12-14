@@ -74,6 +74,9 @@ class Config:
     chrome_user_data_dir: Optional[str] = field(
         default_factory=lambda: os.getenv('CHROME_USER_DATA_DIR')
     )
+    chrome_profile: Optional[str] = field(
+        default_factory=lambda: os.getenv('CHROME_PROFILE')
+    )
     log_level: str = field(default_factory=lambda: os.getenv('LOG_LEVEL', 'INFO'))
     
     def __post_init__(self):

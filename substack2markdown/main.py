@@ -134,7 +134,7 @@ def display_posts_table(posts: List[Post]):
     
     for i, post in enumerate(posts, 1):
         date_str = post.date.strftime('%Y-%m-%d') if post.date else 'Unknown'
-        paid_str = '✓' if post.is_paid else ''
+        paid_str = 'Yes' if post.is_paid else ''
         
         table.add_row(
             str(i),
@@ -161,7 +161,7 @@ def save_metadata(config: Config, posts: List[Post]):
     with open(metadata_path, 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
     
-    console.print(f"✓ Saved metadata to {metadata_path}")
+    console.print(f"[OK] Saved metadata to {metadata_path}")
 
 
 def download_single_post(
@@ -187,7 +187,7 @@ def download_single_post(
     # Fetch content
     content = scraper.get_post_content(post)
     if not content:
-        console.print("[red]✗ Failed to fetch post content[/red]")
+        console.print("[red][FAIL] Failed to fetch post content[/red]")
         return False
     
     # Convert to Markdown
@@ -205,14 +205,14 @@ def download_single_post(
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content.markdown_content)
     
-    console.print(f"[green]✓ Saved:[/green] {filepath}")
+    console.print(f"[green][OK] Saved:[/green] {filepath}")
     
     # Save HTML if configured
     if config.save_html:
         html_path = filepath.with_suffix('.html')
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(content.html_content)
-        console.print(f"[green]✓ Saved HTML:[/green] {html_path}")
+        console.print(f"[green][OK] Saved HTML:[/green] {html_path}")
     
     return True
 
